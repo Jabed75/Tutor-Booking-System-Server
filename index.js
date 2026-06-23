@@ -48,7 +48,12 @@ async function run() {
    
 app.get('/tutor/:id', (req, res, next)=>{
 const header = req.headers.authorization
-next()
+if(header === "logged in"){
+  next()
+} else{
+  res.status(401).json({message: "Unauthorized"})
+}
+
 }, async (req, res) => {
     const { id } = req.params;
     const result = await tutorCollection.findOne({ _id: new ObjectId(id) });
