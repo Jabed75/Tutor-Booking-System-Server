@@ -47,7 +47,8 @@ async function run() {
 // middleware
    
 app.get('/tutor/:id', (req, res, next)=>{
-
+const header = req.headers.authorization
+next()
 }, async (req, res) => {
     const { id } = req.params;
     const result = await tutorCollection.findOne({ _id: new ObjectId(id) });
