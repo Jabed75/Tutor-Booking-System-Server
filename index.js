@@ -44,9 +44,11 @@ async function run() {
    
       res.json(result); 
     });
-
+// middleware
    
-app.get('/tutor/:id', async (req, res) => {
+app.get('/tutor/:id', (req, res, next)=>{
+
+}, async (req, res) => {
     const { id } = req.params;
     const result = await tutorCollection.findOne({ _id: new ObjectId(id) });
     res.json(result);
@@ -64,7 +66,7 @@ app.post("/booking", async (req, res) => {
   res.json(result);
 });
 
-app.delete('/bookings/:bookingId', async (req, res)=>{
+app.delete('/booking/:bookingId', async (req, res)=>{
   const {bookingId} = req.params
   const result = await bookingCollection.deleteOne({_id:new ObjectId(bookingId)})
   res.json(result)
