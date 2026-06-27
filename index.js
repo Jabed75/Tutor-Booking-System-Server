@@ -86,12 +86,7 @@ async function run() {
     });
 // middleware verifytoken likbo id er por
    
-app.get('/tutor/:id',   async (req, res) => {
-    const { id } = req.params;
 
-    const result = await tutorCollection.findOne({ _id: new ObjectId(id) });
-    res.json(result);
-});
 
 
 app.patch('/tutor/:id', async (req, res) => {
