@@ -1,14 +1,15 @@
-// const dns = require('dns')
-// dns.setServers(['8.8.8.8', '1.1.1.1'])
-// const express = require('express')
+const dns = require('dns')
+dns.setServers(['8.8.8.8', '1.1.1.1'])
+const express = require('express')
 
 const dotenv = require('dotenv') 
 const cors = require('cors')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
 
 
 dotenv.config(); 
-const uri = process.env.MONGODB_URL;
+const uri = process.env.MONGODB_URI;
 
 const app = express();
 
@@ -24,6 +25,27 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+const JWKS = createRemoteJWKSet(
+new URL("http://localhost:3000/api/auth/jwks")
+)
+
+const verifyToken = async (req, res, next) => {
+  const authHeader = req?.headers.authorization
+  if(!authHeader){
+    return res.status(401).json({ message: "Unauthorized"});
+  }
+ const token = authHeader.split(" ")[1]
+ if(!token){
+   return res.status(401).json({ message: "Unauthorized"});
+ }
+try{
+  const {payload} = await jwtVerify(token, JWKS)
+  next()
+} catch (error){
+  return res.status(403).json({message:"Forbidden"});
+}
+
+};
 
 async function run() {
   try {
@@ -46,21 +68,31 @@ async function run() {
    
       res.json(result); 
     });
-// middleware
+// middleware verifytoken likbo id er por
    
-app.get('/tutor/:id', (req, res, next)=>{
-const header = req.headers.authorization
-if(header === "logged in"){
-  next()
-} else{
-  res.status(401).json({message: "Unauthorized"})
-}
-
-}, async (req, res) => {
+app.get('/tutor/:id',   async (req, res) => {
     const { id } = req.params;
+
     const result = await tutorCollection.findOne({ _id: new ObjectId(id) });
     res.json(result);
 });
+
+
+app.patch('/tutor/:id', async (req, res) => {
+  const { id } = req.params;
+  const updatedData = req.body;
+console.log(id, updatedData)
+  const result = await tutorCollection.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: updatedData }
+  );
+  res.json(result);
+});
+
+
+
+
+
 app.get("/booking/:userId" , async(req, res)=>{
   const{userId} = req.params
   const result = await bookingCollection.find({userId: userId}).toArray();
