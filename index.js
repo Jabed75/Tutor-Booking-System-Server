@@ -15,7 +15,23 @@ const app = express();
 
 const PORT = process.env.PORT || 5000; 
 
-app.use(cors())
+// app.use(cors())
+const allowedOrigins = [
+  'https://sports-arena-client.vercel.app',
+  'http://localhost:3000'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json())
 
 const client = new MongoClient(uri, {
@@ -90,7 +106,13 @@ console.log(id, updatedData)
 });
 
 
-
+app.delete('/tutor/:id', async (req, res) => {
+  const { id } = req.params;
+  const result = await tutorCollection.deleteOne({
+    _id: new ObjectId(id),
+  });
+  res.json(result);
+});
 
 
 app.get("/booking/:userId" , async(req, res)=>{
