@@ -18,6 +18,7 @@ const PORT = process.env.PORT || 5000;
 // app.use(cors())
 const allowedOrigins = [
   'https://sports-arena-client.vercel.app',
+  'https://mediqueuem.vercel.app',
   'http://localhost:3000'
 ];
 
@@ -41,8 +42,9 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+// server
 const JWKS = createRemoteJWKSet(
-new URL("http://localhost:3000/api/auth/jwks")
+new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
 )
 
 const verifyToken = async (req, res, next) => {
@@ -65,7 +67,7 @@ try{
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     const db = client.db('mediqueue')
     const tutorCollection = db.collection('tutor');
@@ -86,7 +88,12 @@ async function run() {
     });
 // middleware verifytoken likbo id er por
    
+app.get('/tutor/:id',  async (req, res) => {
+    const { id } = req.params;
 
+    const result = await tutorCollection.findOne({ _id: new ObjectId(id) });
+    res.json(result);
+});
 
 
 app.patch('/tutor/:id', async (req, res) => {
@@ -130,7 +137,7 @@ app.delete('/booking/:bookingId', async (req, res)=>{
 })
 
 
-await client.db('admin').command({ ping: 1 });
+// await client.db('admin').command({ ping: 1 });
 console.log('Pinged your deployment. You successfully connected to MongoDB!');
 
 
